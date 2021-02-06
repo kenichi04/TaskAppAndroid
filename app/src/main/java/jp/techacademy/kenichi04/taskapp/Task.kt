@@ -10,6 +10,7 @@ import java.util.Date
 open class Task : RealmObject(), Serializable {    // Realmが内部的にTaskを継承したクラスを作成して利用するため、open修飾子を付ける
     var title: String = ""      // タイトル
     var contents: String = ""   // 内容
+    var category:String = ""    // カテゴリー
     var date: Date = Date()     // 日時
 
     @PrimaryKey

@@ -4,6 +4,8 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.SearchView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
@@ -42,6 +44,27 @@ class MainActivity : AppCompatActivity() {
 
         // ListViewの設定
         mTaskAdapter = TaskAdapter(this)
+
+        // searchViewの設定
+        searchView.isSubmitButtonEnabled = true
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText == null || newText.equals("")) {
+                    reloadListView()
+                }
+                return false
+            }
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                Log.d("TaskApp", query)
+
+                val results = mRealm.where(Task::class.java).equalTo("category", query).findAll().sort("date", Sort.DESCENDING)
+                mTaskAdapter.taskList = mRealm.copyFromRealm(results)
+                listView1.adapter = mTaskAdapter
+                mTaskAdapter.notifyDataSetChanged()
+
+                return false
+            }
+        })
 
         // ListViewタップ時の処理
         listView1.setOnItemClickListener { parent, view, position, id ->

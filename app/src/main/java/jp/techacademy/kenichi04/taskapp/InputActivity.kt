@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
@@ -49,9 +50,14 @@ class InputActivity : AppCompatActivity() {
     }
 
     private val mOnDoneClickListener = View.OnClickListener {
-        addTask()
-        // Activityを閉じて遷移元に戻る
-        finish()
+        if (title_edit_text.text.toString().equals("")) {
+            Toast.makeText(this, "タイトルを入力してください", Toast.LENGTH_LONG).show()
+        } else {
+            addTask()
+            // Activityを閉じて遷移元に戻る
+            finish()
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,6 +99,7 @@ class InputActivity : AppCompatActivity() {
             // 更新の場合
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
+            category_edit_text.setText(mTask!!.category)
 
             val calendar = Calendar.getInstance()
             calendar.time = mTask!!.date
@@ -130,9 +137,14 @@ class InputActivity : AppCompatActivity() {
 
         val title = title_edit_text.text.toString()
         val content = content_edit_text.text.toString()
+        var category = category_edit_text.text.toString()
+        if (category.equals("")) {
+            category = "カテゴリ未設定"
+        }
 
         mTask!!.title = title
         mTask!!.contents = content
+        mTask!!.category = category
         val calendar = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calendar.time
         mTask!!.date = date
