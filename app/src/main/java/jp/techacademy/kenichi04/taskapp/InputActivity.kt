@@ -1,9 +1,14 @@
 package jp.techacademy.kenichi04.taskapp
 
+import android.app.AlarmManager
 import android.app.DatePickerDialog
+import android.app.PendingIntent
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import io.realm.Realm
@@ -137,6 +142,21 @@ class InputActivity : AppCompatActivity() {
         realm.commitTransaction()
 
         realm.close()
+
+        // AlarmManagerを使ってアラームを設定
+        val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
+        resultIntent.putExtra(EXTRA_TASK, mTask!!.id)
+        // PendingIntentの作成; Intentの一種で、すぐに発行させるのではなく特定のタイミングで後から発行させるIntent
+        val resultPendingIntent = PendingIntent.getBroadcast(
+            this,
+            mTask!!.id,
+            resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, resultPendingIntent)
+        Log.d("TaskApp", "${calendar.timeInMillis}")
     }
 
 }

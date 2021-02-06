@@ -1,5 +1,7 @@
 package jp.techacademy.kenichi04.taskapp
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
@@ -30,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
         // 新規タスクの作成
         fab.setOnClickListener { view ->
-            val intent = Intent(this@MainActivity, InputActivity::class.java)
+            val intent = Intent(this, InputActivity::class.java)
             startActivity(intent)
         }
 
@@ -39,13 +41,13 @@ class MainActivity : AppCompatActivity() {
         mRealm.addChangeListener(mRealmListener)
 
         // ListViewの設定
-        mTaskAdapter = TaskAdapter(this@MainActivity)
+        mTaskAdapter = TaskAdapter(this)
 
         // ListViewタップ時の処理
         listView1.setOnItemClickListener { parent, view, position, id ->
             // 入力・編集する画面に遷移
             val task = parent.adapter.getItem(position) as Task
-            val intent = Intent(this@MainActivity, InputActivity::class.java)
+            val intent = Intent(this, InputActivity::class.java)
             intent.putExtra(EXTRA_TASK, task.id)
             startActivity(intent)
         }
@@ -56,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             val task = parent.adapter.getItem(position) as Task
 
             // ダイアログを表示
-            val builder = AlertDialog.Builder(this@MainActivity)
+            val builder = AlertDialog.Builder(this)
             builder.setTitle("削除")
             builder.setMessage(task.title + "を削除しますか")
 
@@ -66,6 +68,18 @@ class MainActivity : AppCompatActivity() {
                 mRealm.beginTransaction()
                 results.deleteAllFromRealm()
                 mRealm.commitTransaction()
+
+                // 設定したアラームを解除する（セット時と同じIntent,PendingIntentを作成し、cancelメソッドで解除）
+                val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
+                val resultPendingIntent = PendingIntent.getBroadcast(
+                    this,
+                    task.id,
+                    resultIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+
+                val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+                alarmManager.cancel(resultPendingIntent)
 
                 reloadListView()
             }
